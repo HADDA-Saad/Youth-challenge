@@ -129,12 +129,7 @@ In-app (WebSocket) and email alerts for: challenge starting, friend overtook you
 | Backend | Spring Boot 3, Spring MVC |
 | Security | Spring Security, JWT, OAuth2 (Google) |
 | Database | MySQL 8, Spring Data JPA, Hibernate |
-| Real-time | Spring WebSocket (STOMP) |
-| Scheduling | Spring `@Scheduled` |
-| Email | Spring Mail |
-| Mapping | MapStruct |
 | Frontend | React, Tailwind CSS |
-| Build | Maven |
 
 ---
 
