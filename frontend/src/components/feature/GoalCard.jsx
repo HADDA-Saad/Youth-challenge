@@ -7,7 +7,7 @@ const categoryColors = {
   OTHER: { bg: 'bg-dark-500/15', text: 'text-dark-300', border: 'border-dark-500/30' },
 };
 
-export default function GoalCard({ goal, onCheckIn }) {
+export default function GoalCard({ goal, onCheckIn, onDelete }) {
   const category = categoryColors[goal.category] || categoryColors.OTHER;
   const isCompleted = goal.status === 'COMPLETED';
   const deadlineStr = goal.deadline
@@ -21,9 +21,22 @@ export default function GoalCard({ goal, onCheckIn }) {
         <div className="flex-1 min-w-0">
           <h3 className="text-base font-semibold text-dark-50 truncate">{goal.title}</h3>
         </div>
-        <span className={`badge-pill ${category.bg} ${category.text} border ${category.border} ml-2 shrink-0`}>
-          {goal.category}
-        </span>
+        <div className="flex items-center gap-2">
+          <span className={`badge-pill ${category.bg} ${category.text} border ${category.border} ml-2 shrink-0`}>
+            {goal.category}
+          </span>
+          {onDelete && (
+            <button
+              onClick={() => onDelete(goal.id)}
+              className="text-dark-400 hover:text-danger-400 transition-colors p-1 rounded-md hover:bg-danger-500/10"
+              title="Delete goal"
+            >
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+              </svg>
+            </button>
+          )}
+        </div>
       </div>
 
       {/* Progress */}

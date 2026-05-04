@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
-import { getGoals, createGoal, checkIn as checkInApi } from '../api/goals';
+import { getGoals, createGoal, checkIn as checkInApi, deleteGoal } from '../api/goals';
 import GoalCard from '../components/feature/GoalCard';
 import Modal from '../components/ui/Modal';
+import PageWrapper from '../components/layout/PageWrapper';
 
 const CATEGORIES = ['FITNESS', 'STUDY', 'CREATIVITY', 'OTHER'];
 const VISIBILITIES = ['PUBLIC', 'PRIVATE'];
@@ -104,28 +105,40 @@ export default function Goals() {
     }
   };
 
+  const handleDeleteGoal = async (goalId) => {
+    if (!window.confirm('Are you sure you want to delete this goal?')) return;
+    try {
+      await deleteGoal(goalId);
+      setGoals(prev => prev.filter(g => g.id !== goalId));
+    } catch (err) {
+      alert('Failed to delete goal');
+    }
+  };
+
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-dark-900">
-        <div className="flex items-center gap-3 text-dark-400">
-          <svg className="animate-spin h-6 w-6" viewBox="0 0 24 24">
-            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
-            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-          </svg>
-          <span>Loading goals...</span>
+      <PageWrapper>
+        <div className="flex items-center justify-center py-32">
+          <div className="flex items-center gap-3 text-dark-400">
+            <svg className="animate-spin h-6 w-6" viewBox="0 0 24 24">
+              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+            </svg>
+            <span>Loading goals...</span>
+          </div>
         </div>
-      </div>
+      </PageWrapper>
     );
   }
 
   return (
-    <div className="min-h-screen bg-dark-900 py-8 px-4">
+    <PageWrapper>
       <div className="max-w-4xl mx-auto">
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
           <div>
             <h1 className="text-2xl font-bold text-dark-50">My Goals</h1>
-            <p className="text-dark-400 mt-1">Track your progress and build streaks.</p>
+            <p className="text-dark-400 mt-1">Track your habits and reach your targets.</p>
           </div>
           <button
             onClick={() => setShowCreateModal(true)}
@@ -150,22 +163,19 @@ export default function Goals() {
           <div className="text-center py-16">
             <div className="inline-flex items-center justify-center w-20 h-20 rounded-2xl bg-dark-800 border border-dark-700 mb-4">
               <svg className="w-10 h-10 text-dark-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
               </svg>
             </div>
             <h3 className="text-lg font-semibold text-dark-300 mb-2">No goals yet</h3>
-            <p className="text-dark-500 mb-4">Create your first goal to start tracking progress!</p>
-            <button
-              onClick={() => setShowCreateModal(true)}
-              className="btn-primary"
-            >
+            <p className="text-dark-500 mb-4">Start by creating your first goal.</p>
+            <button onClick={() => setShowCreateModal(true)} className="btn-primary">
               Create your first goal
             </button>
           </div>
         ) : (
           <div className="grid gap-4 sm:grid-cols-2">
             {goals.map((goal) => (
-              <GoalCard key={goal.id} goal={goal} onCheckIn={openCheckIn} />
+              <GoalCard key={goal.id} goal={goal} onCheckIn={openCheckIn} onDelete={handleDeleteGoal} />
             ))}
           </div>
         )}
@@ -339,6 +349,6 @@ export default function Goals() {
           </div>
         </form>
       </Modal>
-    </div>
+    </PageWrapper>
   );
 }

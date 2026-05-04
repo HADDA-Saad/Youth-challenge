@@ -18,4 +18,6 @@ public interface GoalRepository extends JpaRepository<Goal, Long> {
     long countByUserAndStatusAndCategory(User user,
                                           com.youthchallenge.goal.enums.GoalStatus status,
                                           com.youthchallenge.goal.enums.GoalCategory category);
+
+    long countByUserAndStatus(User user, com.youthchallenge.goal.enums.GoalStatus status);
 }

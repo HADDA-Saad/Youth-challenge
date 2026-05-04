@@ -128,6 +128,11 @@ public class GoalService {
             xpService.addXp(user, 50);
         }
 
+        // Publish check-in event for badge engine
+        eventPublisher.publishEvent(
+                new com.youthchallenge.goal.event.CheckInEvent(this, user.getId(), goal.getId(), goal.getStreakCount())
+        );
+
         Goal saved = goalRepository.save(goal);
         return goalMapper.toDto(saved);
     }
