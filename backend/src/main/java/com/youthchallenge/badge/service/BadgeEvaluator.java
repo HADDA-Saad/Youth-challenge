@@ -15,6 +15,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 
+import com.youthchallenge.social.event.FriendAddedEvent;
+import com.youthchallenge.social.repository.FriendRequestRepository;
+
 @Component
 @RequiredArgsConstructor
 @Slf4j
@@ -24,6 +27,7 @@ public class BadgeEvaluator {
     private final UserService userService;
     private final GoalRepository goalRepository;
     private final ChallengeParticipationRepository participationRepository;
+    private final FriendRequestRepository friendRequestRepository;
 
     /**
      * FIRST_STEP: First goal completed
@@ -75,5 +79,15 @@ public class BadgeEvaluator {
         }
     }
 
-    // FriendAddedEvent will be added in Week 5 for SOCIAL_BUTTERFLY
+    /**
+     * SOCIAL_BUTTERFLY: 10 accepted friends
+     */
+    @EventListener
+    public void onFriendAdded(FriendAddedEvent event) {
+        User user = userService.getUserById(event.getUserId());
+        long friendCount = friendRequestRepository.countAcceptedFriends(user);
+        if (friendCount >= 10) {
+            badgeService.awardBadge(user, BadgeKey.SOCIAL_BUTTERFLY);
+        }
+    }
 }

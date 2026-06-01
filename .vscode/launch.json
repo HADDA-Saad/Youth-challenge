@@ -1,0 +1,14 @@
+{
+    "configurations": [
+        {
+            "type": "java",
+            "name": "Spring Boot-YouthChallengeApplication<youthchallenge>",
+            "request": "launch",
+            "cwd": "${workspaceFolder}",
+            "mainClass": "com.youthchallenge.YouthChallengeApplication",
+            "projectName": "youthchallenge",
+            "args": "",
+            "envFile": "${workspaceFolder}/.env"
+        }
+    ]
+}
