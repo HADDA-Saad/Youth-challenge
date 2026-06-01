@@ -4,6 +4,9 @@ import Login from './pages/auth/Login';
 import Register from './pages/auth/Register';
 import Dashboard from './pages/Dashboard';
 import Goals from './pages/Goals';
+import Challenges from './pages/Challenges';
+import Communities from './pages/Communities';
+import CommunityDetails from './pages/CommunityDetails';
 
 function ProtectedRoute({ children }) {
   const { isAuthenticated } = useAuth();
@@ -30,7 +33,10 @@ function AppRoutes() {
 
       {/* Protected routes */}
       <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+      <Route path="/communities" element={<ProtectedRoute><Communities /></ProtectedRoute>} />
+      <Route path="/communities/:id" element={<ProtectedRoute><CommunityDetails /></ProtectedRoute>} />
       <Route path="/goals" element={<ProtectedRoute><Goals /></ProtectedRoute>} />
+      <Route path="/challenges" element={<ProtectedRoute><Challenges /></ProtectedRoute>} />
 
       {/* Default redirect */}
       <Route path="*" element={<Navigate to="/dashboard" replace />} />
