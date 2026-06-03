@@ -20,4 +20,8 @@ public class UserProfileDto {
     private String level;
     private String avatarUrl;
     private LocalDateTime createdAt;
+    
+    private int goalsCompleted;
+    private int challengesCompleted;
+    private int friendsCount;
 }

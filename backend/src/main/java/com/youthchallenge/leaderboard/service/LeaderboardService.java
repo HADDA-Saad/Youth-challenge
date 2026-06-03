@@ -35,9 +35,7 @@ public class LeaderboardService {
         List<Long> friendIds = friendRequestRepository.findAcceptedFriendIds(user.getId());
         friendIds.add(user.getId()); // Include self
         
-        List<User> users = userRepository.findAllById(friendIds);
-        // Sort by XP desc
-        users.sort((u1, u2) -> Integer.compare(u2.getXp(), u1.getXp()));
+        List<User> users = userRepository.findByIdInOrderByXpDesc(friendIds);
         
         return toLeaderboardList(users);
     }
@@ -48,13 +46,22 @@ public class LeaderboardService {
                 
         List<Object[]> rankings = challengeSubmissionRepository.findRankingsByChallenge(challenge);
         
+        List<Long> userIds = rankings.stream()
+                .map(row -> (Long) row[0])
+                .collect(Collectors.toList());
+        
+        java.util.Map<Long, User> userMap = userRepository.findAllById(userIds).stream()
+                .collect(Collectors.toMap(User::getId, u -> u));
+
         List<LeaderboardEntryDto> entries = new ArrayList<>();
         int rank = 1;
         for (Object[] row : rankings) {
             Long userId = (Long) row[0];
             Number totalValue = (Number) row[1];
             
-            User u = userService.getUserById(userId);
+            User u = userMap.get(userId);
+            if (u == null) continue;
+
             entries.add(LeaderboardEntryDto.builder()
                     .rank(rank++)
                     .userId(u.getId())

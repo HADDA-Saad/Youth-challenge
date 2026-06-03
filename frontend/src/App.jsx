@@ -8,6 +8,9 @@ import Challenges from './pages/Challenges';
 import Communities from './pages/Communities';
 import CommunityDetails from './pages/CommunityDetails';
 import Rules from './pages/Rules';
+import Leaderboard from './pages/Leaderboard';
+import Profile from './pages/Profile';
+import Feed from './pages/Feed';
 
 function ProtectedRoute({ children }) {
   const { isAuthenticated } = useAuth();
@@ -39,6 +42,10 @@ function AppRoutes() {
       <Route path="/goals" element={<ProtectedRoute><Goals /></ProtectedRoute>} />
       <Route path="/challenges" element={<ProtectedRoute><Challenges /></ProtectedRoute>} />
       <Route path="/rules" element={<ProtectedRoute><Rules /></ProtectedRoute>} />
+      <Route path="/leaderboard" element={<ProtectedRoute><Leaderboard /></ProtectedRoute>} />
+      <Route path="/feed" element={<ProtectedRoute><Feed /></ProtectedRoute>} />
+      <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+      <Route path="/profile/:userId" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
 
       {/* Default redirect */}
       <Route path="*" element={<Navigate to="/dashboard" replace />} />

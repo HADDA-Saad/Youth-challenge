@@ -103,18 +103,21 @@ public class FriendService {
                 .collect(Collectors.toList());
     }
     
-    public String getFriendshipStatus(User user1, User user2) {
+    public com.youthchallenge.social.dto.FriendshipStatusDto getFriendshipStatus(User user1, User user2) {
         if (user1.getId().equals(user2.getId())) {
-            return "SELF";
+            return com.youthchallenge.social.dto.FriendshipStatusDto.builder().status("SELF").build();
         }
         Optional<FriendRequest> opt = friendRequestRepository.findFriendshipBetween(user1, user2);
-        if (opt.isEmpty()) return "NONE";
+        if (opt.isEmpty()) return com.youthchallenge.social.dto.FriendshipStatusDto.builder().status("NONE").build();
         FriendRequest fr = opt.get();
-        if (fr.getStatus() == FriendRequestStatus.ACCEPTED) return "ACCEPTED";
-        if (fr.getStatus() == FriendRequestStatus.PENDING) {
-             return fr.getSender().getId().equals(user1.getId()) ? "PENDING_SENT" : "PENDING_RECEIVED";
+        if (fr.getStatus() == FriendRequestStatus.ACCEPTED) {
+            return com.youthchallenge.social.dto.FriendshipStatusDto.builder().status("ACCEPTED").requestId(fr.getId()).build();
         }
-        return "NONE";
+        if (fr.getStatus() == FriendRequestStatus.PENDING) {
+            String statusStr = fr.getSender().getId().equals(user1.getId()) ? "PENDING_SENT" : "PENDING_RECEIVED";
+            return com.youthchallenge.social.dto.FriendshipStatusDto.builder().status(statusStr).requestId(fr.getId()).build();
+        }
+        return com.youthchallenge.social.dto.FriendshipStatusDto.builder().status("NONE").build();
     }
 
     private FriendDto toFriendDto(User user) {

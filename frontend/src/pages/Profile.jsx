@@ -21,6 +21,7 @@ export default function Profile() {
 
   // Social state
   const [friendStatus, setFriendStatus] = useState('NONE'); // NONE, ACCEPTED, PENDING_SENT, PENDING_RECEIVED
+  const [friendRequestId, setFriendRequestId] = useState(null);
   const [friends, setFriends] = useState([]);
   const [pendingRequests, setPendingRequests] = useState([]);
   const [socialLoading, setSocialLoading] = useState(false);
@@ -46,7 +47,10 @@ export default function Profile() {
 
       if (!isOwnProfile) {
         const statusRes = await getFriendshipStatus(targetId);
-        if (statusRes.success) setFriendStatus(statusRes.data.status);
+        if (statusRes.success) {
+          setFriendStatus(statusRes.data.status);
+          setFriendRequestId(statusRes.data.requestId);
+        }
       } else {
         // Fetch friends list for own profile
         fetchFriends();
@@ -86,7 +90,16 @@ export default function Profile() {
   const handleAcceptRequest = async (requestId) => {
     try {
       await acceptFriendRequest(requestId);
-      fetchFriends(); // Refresh lists
+      if (isOwnProfile) {
+        fetchFriends(); // Refresh own profile's friends list
+      } else {
+        // On a foreign profile, refresh the friendship status button
+        const statusRes = await getFriendshipStatus(targetId);
+        if (statusRes.success) {
+          setFriendStatus(statusRes.data.status);
+          setFriendRequestId(statusRes.data.requestId);
+        }
+      }
     } catch (err) {
       console.error('Failed to accept request', err);
     }
@@ -101,14 +114,16 @@ export default function Profile() {
     }
   };
 
-  const handleRemoveFriend = async (requestId) => {
+  const handleRemoveFriend = async () => {
     if (!window.confirm('Are you sure you want to remove this friend?')) return;
-    // For removing a friend from the profile page
     try {
-      // Need the request ID which we don't have directly from getFriendshipStatus
-      // In a real app we'd fetch the specific request ID or have an endpoint to remove by user ID
-      // For now we just alert since API expects request ID
-      alert("Feature coming soon");
+      if (friendRequestId) {
+        await declineOrRemoveFriend(friendRequestId);
+        setFriendStatus('NONE');
+        setFriendRequestId(null);
+      } else {
+        alert("Cannot remove friend: Request ID missing.");
+      }
     } catch (err) {
       console.error(err);
     }
@@ -179,7 +194,7 @@ export default function Profile() {
                       <button disabled className="btn-secondary opacity-70 w-full md:w-auto">Request Sent</button>
                     )}
                     {friendStatus === 'PENDING_RECEIVED' && (
-                      <button className="btn-accent w-full md:w-auto">Accept Request</button>
+                      <button onClick={() => handleAcceptRequest(friendRequestId)} className="btn-accent w-full md:w-auto">Accept Request</button>
                     )}
                     {friendStatus === 'ACCEPTED' && (
                       <button onClick={handleRemoveFriend} className="btn-secondary text-danger-400 hover:bg-danger-500/10 border-danger-500/30 w-full md:w-auto">
