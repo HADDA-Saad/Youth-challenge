@@ -12,8 +12,10 @@ public class CommunityDto {
     private String description;
     private Long creatorId;
     private String creatorUsername;
+    private String profilePictureBase64;
     private int memberCount;
     private boolean joined;
+    private String userRole;
     private int userXp;
     private int userLevel;
     private LocalDateTime createdAt;

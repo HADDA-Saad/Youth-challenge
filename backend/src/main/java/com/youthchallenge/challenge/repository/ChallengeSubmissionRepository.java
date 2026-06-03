@@ -18,4 +18,9 @@ public interface ChallengeSubmissionRepository extends JpaRepository<ChallengeSu
     @Query("SELECT s.user.id, SUM(s.value) as totalValue FROM ChallengeSubmission s " +
            "WHERE s.challenge = :challenge GROUP BY s.user.id ORDER BY totalValue DESC")
     List<Object[]> findRankingsByChallenge(@Param("challenge") Challenge challenge);
+
+    long countByChallengeAndUser(Challenge challenge, User user);
+
+    @Query("SELECT COALESCE(SUM(s.value), 0) FROM ChallengeSubmission s WHERE s.challenge = :challenge AND s.user = :user")
+    long sumValueByChallengeAndUser(@Param("challenge") Challenge challenge, @Param("user") User user);
 }

@@ -12,6 +12,21 @@ export const createChallenge = async (data) => {
   return response.data;
 };
 
+export const updateChallenge = async (id, data) => {
+  const response = await api.put(`/challenges/${id}`, data);
+  return response.data;
+};
+
+export const getMyChallenges = async () => {
+  const response = await api.get('/challenges/my');
+  return response.data;
+};
+
+export const getGlobalChallenges = async (page = 0, size = 10) => {
+  const response = await api.get('/challenges/global', { params: { page, size } });
+  return response.data;
+};
+
 export const getChallenge = async (id) => {
   const response = await api.get(`/challenges/${id}`);
   return response.data;

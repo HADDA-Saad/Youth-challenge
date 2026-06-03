@@ -17,8 +17,8 @@ export default function ChallengeCard({ challenge, onJoin, onSubmit, onLeave, on
   const startStr = new Date(challenge.startDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
   const endStr = new Date(challenge.endDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
 
-  const canJoin = challenge.status === 'OPEN' && !challenge.joined;
-  const canSubmit = challenge.status === 'ACTIVE' && challenge.joined;
+  const canJoin = (challenge.status === 'OPEN' || challenge.status === 'ACTIVE') && !challenge.joined;
+  const canSubmit = (challenge.status === 'ACTIVE' || challenge.status === 'OPEN') && challenge.joined && (challenge.userProgress || 0) < 100;
 
   return (
     <div className="card group hover:border-dark-600 transition-all duration-200">
@@ -54,24 +54,48 @@ export default function ChallengeCard({ challenge, onJoin, onSubmit, onLeave, on
       </div>
 
       {/* Meta */}
-      <div className="flex items-center justify-between text-sm mb-4">
-        <div className="flex items-center gap-3 text-dark-400">
-          {/* Participant count */}
-          <div className="flex items-center gap-1">
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-            </svg>
-            <span>{challenge.participantCount} joined</span>
-          </div>
+      <div className="flex flex-col text-sm mb-4">
+        <div className="flex items-center justify-between text-dark-400">
+          <div className="flex items-center gap-3">
+            {/* Participant count */}
+            <div className="flex items-center gap-1">
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+              </svg>
+              <span>{challenge.participantCount} joined</span>
+            </div>
 
-          {/* Dates */}
-          <div className="flex items-center gap-1">
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-            </svg>
-            <span>{startStr} – {endStr}</span>
+            {/* Dates */}
+            <div className="flex items-center gap-1">
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+              </svg>
+              <span>{startStr} – {endStr}</span>
+            </div>
           </div>
         </div>
+
+        {/* Submissions */}
+        {challenge.joined && (
+          <div className="w-full mt-4 bg-dark-700/30 p-3 rounded-lg border border-dark-600/50">
+            <div className="flex items-center justify-between text-xs text-dark-300 mb-2">
+              <span className="font-medium text-dark-200">Progress</span>
+              <span className="font-bold text-accent-400">{Math.min(challenge.userProgress || 0, 100)}%</span>
+            </div>
+            <div className="h-2 w-full bg-dark-700 rounded-full overflow-hidden">
+              <div 
+                className="h-full bg-accent-500 rounded-full transition-all duration-500 shadow-[0_0_10px_rgba(var(--accent-500),0.5)]"
+                style={{ width: `${Math.min(challenge.userProgress || 0, 100)}%` }}
+              ></div>
+            </div>
+            <div className="text-xs text-dark-400 mt-2 flex justify-between">
+              <span>{challenge.userSubmissionsCount || 0} check-ins</span>
+              {challenge.userProgress >= 100 && (
+                <span className="text-success-400 font-medium">Completed!</span>
+              )}
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Action */}

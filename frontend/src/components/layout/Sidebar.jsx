@@ -102,7 +102,22 @@ export default function Sidebar() {
       </nav>
 
       {/* Footer */}
-      <div className="px-4 py-4 border-t border-dark-700">
+      <div className="px-4 py-4 border-t border-dark-700 flex flex-col gap-3">
+        <NavLink
+          to="/rules"
+          className={({ isActive }) =>
+            `flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+              isActive
+                ? 'bg-accent-600/15 text-accent-400 border border-accent-500/20'
+                : 'text-dark-400 hover:text-dark-200 hover:bg-dark-700/50'
+            }`
+          }
+        >
+          <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+          XP & Rules
+        </NavLink>
         <p className="text-xs text-dark-600 text-center">© 2026 YouthChallenge</p>
       </div>
     </aside>

@@ -14,6 +14,9 @@ public class CreateCommunityBadgeRequest {
     @NotNull(message = "Required level is required")
     private Integer requiredLevel;
 
+    @NotNull(message = "Required XP is required")
+    private Integer requiredXp;
+
     @NotBlank(message = "Image Base64 is required")
     private String imageBase64;
 }
