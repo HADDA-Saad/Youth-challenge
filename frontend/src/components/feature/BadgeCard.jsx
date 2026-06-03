@@ -13,7 +13,11 @@ export default function BadgeCard({ badge }) {
   return (
     <div className={`card ${style.bg} border ${style.border} hover:border-opacity-60 transition-all duration-200`}>
       <div className="flex items-center gap-3">
-        <div className="text-2xl">{style.emoji}</div>
+        {badge.imageBase64 ? (
+          <img src={badge.imageBase64} alt={badge.name} className="w-8 h-8 object-contain drop-shadow" title={badge.name} />
+        ) : (
+          <div className="text-2xl">{style.emoji}</div>
+        )}
         <div className="min-w-0">
           <h4 className={`text-sm font-semibold ${style.text} truncate`}>{badge.name}</h4>
           <p className="text-xs text-dark-400 truncate">{badge.description}</p>

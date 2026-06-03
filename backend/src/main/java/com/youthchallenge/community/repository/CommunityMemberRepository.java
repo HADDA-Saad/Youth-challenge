@@ -13,6 +13,7 @@ import java.util.Optional;
 public interface CommunityMemberRepository extends JpaRepository<CommunityMember, Long> {
     boolean existsByCommunityAndUser(Community community, User user);
     Optional<CommunityMember> findByCommunityAndUser(Community community, User user);
+    Optional<CommunityMember> findByCommunityAndUserId(Community community, Long userId);
     List<CommunityMember> findByUser(User user);
     List<CommunityMember> findByCommunity(Community community);
 }

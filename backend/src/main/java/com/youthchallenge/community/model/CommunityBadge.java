@@ -27,6 +27,9 @@ public class CommunityBadge {
     @Column(nullable = false)
     private int requiredLevel;
 
+    @Column(nullable = false)
+    private int requiredXp = 0;
+
     @Column(columnDefinition = "LONGTEXT")
     private String imageBase64; // Small PNG stored as base64
 }

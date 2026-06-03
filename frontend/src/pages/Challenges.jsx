@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { getChallenges, createChallenge, joinChallenge, submitToChallenge, leaveChallenge, deleteChallenge } from '../api/challenges';
+import { getMyChallenges, getGlobalChallenges, createChallenge, joinChallenge, submitToChallenge, leaveChallenge, deleteChallenge } from '../api/challenges';
 import { getCommunities } from '../api/communities';
 import ChallengeCard from '../components/feature/ChallengeCard';
 import Modal from '../components/ui/Modal';
@@ -16,7 +16,8 @@ const TYPE_LABELS = {
 
 export default function Challenges() {
   const { user: authUser } = useAuth();
-  const [challenges, setChallenges] = useState([]);
+  const [myChallenges, setMyChallenges] = useState([]);
+  const [globalChallenges, setGlobalChallenges] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [communities, setCommunities] = useState([]);
@@ -50,11 +51,13 @@ export default function Challenges() {
   const fetchData = async () => {
     try {
       setLoading(true);
-      const [chRes, commRes] = await Promise.all([
-        getChallenges(0, 10, communityIdParam),
+      const [myRes, globalRes, commRes] = await Promise.all([
+        getMyChallenges(),
+        getGlobalChallenges(0, 50),
         getCommunities()
       ]);
-      if (chRes.success) setChallenges(chRes.data);
+      if (myRes.success) setMyChallenges(myRes.data);
+      if (globalRes.success) setGlobalChallenges(globalRes.data.content || globalRes.data);
       if (commRes.success) setCommunities(commRes.data);
     } catch (err) {
       setError('Failed to load data');
@@ -74,7 +77,9 @@ export default function Challenges() {
 
       const response = await createChallenge(payload);
       if (response.success) {
-        setChallenges((prev) => [response.data, ...prev]);
+        if (!payload.communityId) {
+          setGlobalChallenges((prev) => [response.data, ...prev]);
+        }
         setShowCreateModal(false);
         setCreateForm({ title: '', description: '', type: 'FIXED_DURATION', startDate: '', endDate: '', communityId: '' });
       }
@@ -89,9 +94,8 @@ export default function Challenges() {
     try {
       const response = await joinChallenge(challengeId);
       if (response.success) {
-        setChallenges((prev) =>
-          prev.map((c) => (c.id === challengeId ? response.data : c))
-        );
+        setMyChallenges((prev) => [response.data, ...prev]);
+        setGlobalChallenges((prev) => prev.map((c) => (c.id === challengeId ? response.data : c)));
       }
     } catch (err) {
       setError(err.response?.data?.message || 'Failed to join challenge');
@@ -104,14 +108,8 @@ export default function Challenges() {
     try {
       const response = await leaveChallenge(challengeId);
       if (response.success) {
-        setChallenges((prev) =>
-          prev.map((c) => {
-            if (c.id === challengeId) {
-              return { ...c, joined: false, participantCount: c.participantCount - 1 };
-            }
-            return c;
-          })
-        );
+        setMyChallenges((prev) => prev.filter((c) => c.id !== challengeId));
+        setGlobalChallenges((prev) => prev.map((c) => c.id === challengeId ? { ...c, joined: false, participantCount: c.participantCount - 1 } : c));
       }
     } catch (err) {
       setError(err.response?.data?.message || 'Failed to leave challenge');
@@ -124,7 +122,8 @@ export default function Challenges() {
     try {
       const response = await deleteChallenge(challengeId);
       if (response.success) {
-        setChallenges((prev) => prev.filter((c) => c.id !== challengeId));
+        setMyChallenges((prev) => prev.filter((c) => c.id !== challengeId));
+        setGlobalChallenges((prev) => prev.filter((c) => c.id !== challengeId));
       }
     } catch (err) {
       setError(err.response?.data?.message || 'Failed to delete challenge');
@@ -151,7 +150,7 @@ export default function Challenges() {
       };
       const response = await submitToChallenge(submitChallenge.id, payload);
       if (response.success) {
-        setChallenges((prev) =>
+        setMyChallenges((prev) =>
           prev.map((c) => (c.id === submitChallenge.id ? response.data : c))
         );
         setShowSubmitModal(false);
@@ -206,25 +205,38 @@ export default function Challenges() {
           </div>
         )}
 
-        {/* Challenges grid */}
-        {challenges.length === 0 ? (
-          <div className="text-center py-16">
-            <div className="inline-flex items-center justify-center w-20 h-20 rounded-2xl bg-dark-800 border border-dark-700 mb-4">
-              <svg className="w-10 h-10 text-dark-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M13 10V3L4 14h7v7l9-11h-7z" />
-              </svg>
-            </div>
-            <h3 className="text-lg font-semibold text-dark-300 mb-2">No challenges yet</h3>
-            <p className="text-dark-500 mb-4">Be the first to create a challenge!</p>
-            <button onClick={() => setShowCreateModal(true)} className="btn-primary">
-              Create a challenge
-            </button>
+        {/* My Challenges */}
+        <h2 className="text-xl font-bold text-dark-100 mb-4">My Challenges</h2>
+        {myChallenges.length === 0 ? (
+          <div className="text-center py-8 bg-dark-800 rounded-lg border border-dark-700 mb-8">
+            <p className="text-dark-400">You haven't joined any challenges yet.</p>
           </div>
         ) : (
-          <div className="grid gap-4 sm:grid-cols-2">
-            {challenges.map((challenge) => (
+          <div className="grid gap-4 sm:grid-cols-2 mb-8">
+            {myChallenges.map((challenge) => (
               <ChallengeCard
-                key={challenge.id}
+                key={`my-${challenge.id}`}
+                challenge={challenge}
+                onJoin={handleJoin}
+                onSubmit={openSubmit}
+                onLeave={handleLeave}
+                onDelete={challenge.creatorId === authUser?.userId ? handleDelete : null}
+              />
+            ))}
+          </div>
+        )}
+
+        {/* Global Challenges */}
+        <h2 className="text-xl font-bold text-dark-100 mb-4 mt-8">Discover Global Challenges</h2>
+        {globalChallenges.length === 0 ? (
+          <div className="text-center py-8">
+            <p className="text-dark-500 mb-4">No global challenges found.</p>
+          </div>
+        ) : (
+          <div className="grid gap-4 sm:grid-cols-2 mb-8">
+            {globalChallenges.map((challenge) => (
+              <ChallengeCard
+                key={`global-${challenge.id}`}
                 challenge={challenge}
                 onJoin={handleJoin}
                 onSubmit={openSubmit}
@@ -355,16 +367,17 @@ export default function Challenges() {
 
           <div>
             <label htmlFor="submit-value" className="block text-sm font-medium text-dark-300 mb-1.5">
-              Today&apos;s value
+              Progress Percentage (%)
             </label>
             <input
               id="submit-value"
               type="number"
               min="1"
+              max="100"
               value={submitForm.value}
               onChange={(e) => setSubmitForm({ ...submitForm, value: e.target.value })}
               className="input-field"
-              placeholder="How much did you achieve?"
+              placeholder="E.g. 10 for 10% progress"
               required
             />
           </div>

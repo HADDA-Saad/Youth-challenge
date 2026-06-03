@@ -1,5 +1,6 @@
 package com.youthchallenge.community.model;
 
+import com.youthchallenge.community.enums.CommunityRole;
 import com.youthchallenge.user.model.User;
 import jakarta.persistence.*;
 import lombok.*;
@@ -31,4 +32,8 @@ public class CommunityMember {
 
     @Builder.Default
     private int level = 1;
+
+    @Enumerated(EnumType.STRING)
+    @Builder.Default
+    private CommunityRole role = CommunityRole.MEMBER;
 }

@@ -17,6 +17,8 @@ public interface ChallengeRepository extends JpaRepository<Challenge, Long> {
 
     Page<Challenge> findByStatusInAndCommunityIdOrderByCreatedAtDesc(List<ChallengeStatus> statuses, Long communityId, Pageable pageable);
 
+    Page<Challenge> findByStatusInAndCommunityIsNullOrderByCreatedAtDesc(List<ChallengeStatus> statuses, Pageable pageable);
+
     List<Challenge> findByStatusAndStartDateLessThanEqual(ChallengeStatus status, LocalDate date);
 
     List<Challenge> findByStatusAndEndDateLessThan(ChallengeStatus status, LocalDate date);

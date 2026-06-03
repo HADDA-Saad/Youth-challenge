@@ -101,10 +101,19 @@ export default function Communities() {
             <div key={community.id} className="card flex flex-col justify-between">
               <div>
                 <div className="flex justify-between items-start mb-2">
-                  <Link to={`/communities/${community.id}`} className="hover:text-primary-400 transition-colors">
-                    <h3 className="text-lg font-bold text-dark-50 hover:underline">{community.name}</h3>
-                  </Link>
-                  <span className="badge-pill bg-dark-700 text-dark-300">{community.memberCount} members</span>
+                  <div className="flex items-center gap-3">
+                    {community.profilePictureBase64 ? (
+                      <img src={community.profilePictureBase64} alt={community.name} className="w-12 h-12 rounded-lg object-cover border border-dark-600" />
+                    ) : (
+                      <div className="w-12 h-12 rounded-lg bg-dark-700 flex items-center justify-center text-dark-400 font-bold border border-dark-600">
+                        {community.name.charAt(0).toUpperCase()}
+                      </div>
+                    )}
+                    <Link to={`/communities/${community.id}`} className="hover:text-primary-400 transition-colors">
+                      <h3 className="text-lg font-bold text-dark-50 hover:underline">{community.name}</h3>
+                    </Link>
+                  </div>
+                  <span className="badge-pill bg-dark-700 text-dark-300 shrink-0">{community.memberCount} members</span>
                 </div>
                 <p className="text-sm text-dark-400 line-clamp-2 mb-4">{community.description}</p>
               </div>

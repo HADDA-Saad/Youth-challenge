@@ -48,6 +48,19 @@ public class ChallengeService {
         return challenges.map(challenge -> toDto(challenge, currentUser));
     }
 
+    public Page<ChallengeDto> getGlobalChallenges(User currentUser, Pageable pageable) {
+        List<ChallengeStatus> statuses = List.of(ChallengeStatus.OPEN, ChallengeStatus.ACTIVE);
+        Page<Challenge> challenges = challengeRepository.findByStatusInAndCommunityIsNullOrderByCreatedAtDesc(statuses, pageable);
+        return challenges.map(challenge -> toDto(challenge, currentUser));
+    }
+
+    public List<ChallengeDto> getMyChallenges(User currentUser) {
+        List<ChallengeParticipation> participations = participationRepository.findByUserOrderByJoinedAtDesc(currentUser);
+        return participations.stream()
+                .map(p -> toDto(p.getChallenge(), currentUser))
+                .toList();
+    }
+
     public ChallengeDto getChallenge(User currentUser, Long challengeId) {
         Challenge challenge = findChallengeById(challengeId);
         return toDto(challenge, currentUser);
@@ -63,8 +76,10 @@ public class ChallengeService {
         if (request.getCommunityId() != null) {
             community = communityRepository.findById(request.getCommunityId())
                     .orElseThrow(() -> ApiException.notFound("Community not found"));
-            if (!community.getCreator().getId().equals(user.getId())) {
-                throw ApiException.forbidden("Only the community creator can create challenges in this community");
+            
+            com.youthchallenge.community.model.CommunityMember member = communityService.getMember(community, user);
+            if (member == null || member.getRole() == com.youthchallenge.community.enums.CommunityRole.MEMBER) {
+                throw ApiException.forbidden("Only the community creator or moderators can create challenges in this community");
             }
         }
 
@@ -72,7 +87,7 @@ public class ChallengeService {
                 .title(request.getTitle())
                 .description(request.getDescription())
                 .type(request.getType())
-                .status(ChallengeStatus.OPEN)
+                .status(ChallengeStatus.ACTIVE)
                 .startDate(request.getStartDate())
                 .endDate(request.getEndDate())
                 .creator(user)
@@ -84,11 +99,40 @@ public class ChallengeService {
     }
 
     @Transactional
+    public ChallengeDto updateChallenge(User user, Long challengeId, UpdateChallengeRequest request) {
+        Challenge challenge = findChallengeById(challengeId);
+        
+        if (challenge.getCommunity() != null) {
+            com.youthchallenge.community.model.CommunityMember member = communityService.getMember(challenge.getCommunity(), user);
+            if (member == null || member.getRole() == com.youthchallenge.community.enums.CommunityRole.MEMBER) {
+                throw ApiException.forbidden("Only the creator or moderators can edit this challenge");
+            }
+        } else if (!challenge.getCreator().getId().equals(user.getId())) {
+            throw ApiException.forbidden("Only the creator can edit this challenge");
+        }
+        
+        challenge.setTitle(request.getTitle());
+        challenge.setDescription(request.getDescription());
+        challenge.setStartDate(request.getStartDate());
+        challenge.setEndDate(request.getEndDate());
+        
+        challengeRepository.save(challenge);
+        return toDto(challenge, user);
+    }
+
+    @Transactional
     public void deleteChallenge(User user, Long challengeId) {
         Challenge challenge = findChallengeById(challengeId);
-        if (!challenge.getCreator().getId().equals(user.getId())) {
+        
+        if (challenge.getCommunity() != null) {
+            com.youthchallenge.community.model.CommunityMember member = communityService.getMember(challenge.getCommunity(), user);
+            if (member == null || member.getRole() == com.youthchallenge.community.enums.CommunityRole.MEMBER) {
+                throw ApiException.forbidden("Only the creator or moderators can delete this challenge");
+            }
+        } else if (!challenge.getCreator().getId().equals(user.getId())) {
             throw ApiException.forbidden("Only the creator can delete this challenge");
         }
+        
         challengeRepository.delete(challenge);
     }
 
@@ -96,8 +140,8 @@ public class ChallengeService {
     public ChallengeDto joinChallenge(User user, Long challengeId) {
         Challenge challenge = findChallengeById(challengeId);
 
-        if (challenge.getStatus() != ChallengeStatus.OPEN) {
-            throw ApiException.badRequest("Can only join challenges with OPEN status");
+        if (challenge.getStatus() != ChallengeStatus.OPEN && challenge.getStatus() != ChallengeStatus.ACTIVE) {
+            throw ApiException.badRequest("Can only join challenges with OPEN or ACTIVE status");
         }
 
         if (participationRepository.existsByChallengeAndUser(challenge, user)) {
@@ -133,13 +177,19 @@ public class ChallengeService {
     public ChallengeDto submitToChallenge(User user, Long challengeId, SubmissionRequest request) {
         Challenge challenge = findChallengeById(challengeId);
 
-        if (challenge.getStatus() != ChallengeStatus.ACTIVE) {
-            throw ApiException.badRequest("Can only submit to ACTIVE challenges");
+        if (challenge.getStatus() != ChallengeStatus.ACTIVE && challenge.getStatus() != ChallengeStatus.OPEN) {
+            throw ApiException.badRequest("Can only submit to ACTIVE or OPEN challenges");
+        }
+
+        if (java.time.LocalDate.now().isBefore(challenge.getStartDate())) {
+            throw ApiException.badRequest("Challenge has not started yet (Start Date: " + challenge.getStartDate() + ")");
         }
 
         if (!participationRepository.existsByChallengeAndUser(challenge, user)) {
             throw ApiException.forbidden("You must join this challenge before submitting");
         }
+
+        long previousProgress = submissionRepository.sumValueByChallengeAndUser(challenge, user);
 
         ChallengeSubmission submission = ChallengeSubmission.builder()
                 .challenge(challenge)
@@ -150,6 +200,14 @@ public class ChallengeService {
                 .build();
 
         submissionRepository.save(submission);
+
+        long newProgress = previousProgress + request.getValue();
+
+        // Award XP for checking in
+        xpService.addXp(user, 10);
+        if (challenge.getCommunity() != null) {
+            communityService.addCommunityXp(user, challenge.getCommunity(), 10);
+        }
 
         return toDto(challenge, user);
     }
@@ -208,6 +266,13 @@ public class ChallengeService {
         long participantCount = participationRepository.countByChallenge(challenge);
         boolean joined = currentUser != null &&
                 participationRepository.existsByChallengeAndUser(challenge, currentUser);
+        
+        long userSubmissionsCount = 0;
+        long userProgress = 0;
+        if (currentUser != null && joined) {
+            userSubmissionsCount = submissionRepository.countByChallengeAndUser(challenge, currentUser);
+            userProgress = submissionRepository.sumValueByChallengeAndUser(challenge, currentUser);
+        }
 
         return ChallengeDto.builder()
                 .id(challenge.getId())
@@ -223,6 +288,8 @@ public class ChallengeService {
                 .communityName(challenge.getCommunity() != null ? challenge.getCommunity().getName() : null)
                 .participantCount(participantCount)
                 .joined(joined)
+                .userSubmissionsCount(userSubmissionsCount)
+                .userProgress(userProgress)
                 .createdAt(challenge.getCreatedAt())
                 .build();
     }

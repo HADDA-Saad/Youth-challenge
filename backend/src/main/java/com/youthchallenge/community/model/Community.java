@@ -25,10 +25,25 @@ public class Community {
     @Column(columnDefinition = "TEXT")
     private String description;
 
+    @Column(columnDefinition = "LONGTEXT")
+    private String profilePictureBase64;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "creator_id", nullable = false)
     private User creator;
 
     @CreationTimestamp
     private LocalDateTime createdAt;
+
+    @Builder.Default
+    @OneToMany(mappedBy = "community", cascade = CascadeType.ALL, orphanRemoval = true)
+    private java.util.List<com.youthchallenge.challenge.model.Challenge> challenges = new java.util.ArrayList<>();
+
+    @Builder.Default
+    @OneToMany(mappedBy = "community", cascade = CascadeType.ALL, orphanRemoval = true)
+    private java.util.List<CommunityMember> members = new java.util.ArrayList<>();
+
+    @Builder.Default
+    @OneToMany(mappedBy = "community", cascade = CascadeType.ALL, orphanRemoval = true)
+    private java.util.List<CommunityBadge> badges = new java.util.ArrayList<>();
 }

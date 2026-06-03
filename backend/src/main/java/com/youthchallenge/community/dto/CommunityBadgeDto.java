@@ -11,5 +11,6 @@ public class CommunityBadgeDto {
     private String name;
     private String description;
     private int requiredLevel;
+    private int requiredXp;
     private String imageBase64;
 }

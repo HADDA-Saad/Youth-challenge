@@ -29,5 +29,7 @@ public class ChallengeDto {
     private String communityName;
     private long participantCount;
     private boolean joined;
+    private long userSubmissionsCount;
+    private long userProgress;
     private LocalDateTime createdAt;
 }

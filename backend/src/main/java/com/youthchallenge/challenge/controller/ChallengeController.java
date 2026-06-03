@@ -40,6 +40,31 @@ public class ChallengeController {
         ));
     }
 
+    @GetMapping("/my")
+    public ResponseEntity<ApiResponse<java.util.List<ChallengeDto>>> getMyChallenges(
+            @AuthenticationPrincipal User user) {
+        java.util.List<ChallengeDto> challenges = challengeService.getMyChallenges(user);
+        return ResponseEntity.ok(ApiResponse.success(challenges));
+    }
+
+    @GetMapping("/global")
+    public ResponseEntity<PagedResponse<ChallengeDto>> getGlobalChallenges(
+            @AuthenticationPrincipal User user,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        Page<ChallengeDto> challenges = challengeService.getGlobalChallenges(user, pageable);
+
+        return ResponseEntity.ok(PagedResponse.of(
+                challenges.getContent(),
+                challenges.getNumber(),
+                challenges.getSize(),
+                challenges.getTotalElements(),
+                challenges.getTotalPages(),
+                challenges.isLast()
+        ));
+    }
+
     @PostMapping
     public ResponseEntity<ApiResponse<ChallengeDto>> createChallenge(
             @AuthenticationPrincipal User user,
@@ -54,6 +79,15 @@ public class ChallengeController {
             @PathVariable Long id) {
         ChallengeDto challenge = challengeService.getChallenge(user, id);
         return ResponseEntity.ok(ApiResponse.success(challenge));
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<ApiResponse<ChallengeDto>> updateChallenge(
+            @AuthenticationPrincipal User user,
+            @PathVariable Long id,
+            @Valid @RequestBody UpdateChallengeRequest request) {
+        ChallengeDto challenge = challengeService.updateChallenge(user, id, request);
+        return ResponseEntity.ok(ApiResponse.success("Challenge updated successfully", challenge));
     }
 
     @DeleteMapping("/{id}")

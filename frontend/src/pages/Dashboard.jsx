@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { getMyProfile, getMyBadges } from '../api/users';
+import { getMyCommunityBadges } from '../api/communities';
 import { getGoals } from '../api/goals';
 import { getChallenges } from '../api/challenges';
 import { getLevelInfo } from '../utils/xpUtils';
@@ -40,9 +41,10 @@ export default function Dashboard() {
     try {
       setLoading(true);
 
-      const [profileRes, badgesRes, goalsRes, challengesRes] = await Promise.allSettled([
+      const [profileRes, badgesRes, commBadgesRes, goalsRes, challengesRes] = await Promise.allSettled([
         getMyProfile(),
         getMyBadges(),
+        getMyCommunityBadges(),
         getGoals(),
         getChallenges(0, 3),
       ]);
@@ -50,9 +52,19 @@ export default function Dashboard() {
       if (profileRes.status === 'fulfilled' && profileRes.value.success) {
         setProfile(profileRes.value.data);
       }
+      let allBadges = [];
       if (badgesRes.status === 'fulfilled' && badgesRes.value.success) {
-        setBadges(badgesRes.value.data);
+        console.log("Global Badges:", badgesRes.value.data);
+        allBadges = [...allBadges, ...badgesRes.value.data];
       }
+      if (commBadgesRes.status === 'fulfilled' && commBadgesRes.value.success) {
+        console.log("Community Badges:", commBadgesRes.value.data);
+        allBadges = [...allBadges, ...commBadgesRes.value.data];
+      } else {
+        console.error("CommBadges Failed:", commBadgesRes);
+      }
+      console.log("All Badges:", allBadges);
+      setBadges(allBadges);
       if (goalsRes.status === 'fulfilled' && goalsRes.value.success) {
         setGoals(goalsRes.value.data);
       }
@@ -213,8 +225,8 @@ export default function Dashboard() {
               </div>
             ) : (
               <div className="space-y-3">
-                {recentBadges.map((badge) => (
-                  <BadgeCard key={badge.id} badge={badge} />
+                {recentBadges.map((badge, index) => (
+                  <BadgeCard key={`${badge.id}-${badge.communityId || 'global'}-${index}`} badge={badge} />
                 ))}
               </div>
             )}
