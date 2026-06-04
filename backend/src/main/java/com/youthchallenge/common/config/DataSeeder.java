@@ -41,6 +41,7 @@ public class DataSeeder implements CommandLineRunner {
     private final ChallengeParticipationRepository participationRepository;
     private final FriendRequestRepository friendRequestRepository;
     private final BadgeService badgeService;
+    private final com.youthchallenge.feed.service.FeedService feedService;
 
     @Override
     @Transactional
@@ -85,11 +86,17 @@ public class DataSeeder implements CommandLineRunner {
         joinChallenge(c2, youssef);
         joinChallenge(c2, salma);
 
-        // 6. Award some badges
+        // 6. Award some badges (this inherently triggers feed events)
         badgeService.awardBadge(amine, BadgeKey.FIRST_STEP);
         badgeService.awardBadge(amine, BadgeKey.ON_FIRE);
         badgeService.awardBadge(youssef, BadgeKey.FIRST_STEP);
         badgeService.awardBadge(fatima, BadgeKey.BOOKWORM);
+
+        // 7. Record extra feed events to populate the feed
+        feedService.recordEvent(youssef, com.youthchallenge.feed.enums.FeedItemType.GOAL_COMPLETED, "Learn React", 100);
+        feedService.recordEvent(fatima, com.youthchallenge.feed.enums.FeedItemType.CHALLENGE_JOINED, "Marathon Runners", 20);
+        feedService.recordEvent(youssef, com.youthchallenge.feed.enums.FeedItemType.CHALLENGE_COMPLETED, "100 Days of Code", 500);
+        feedService.recordEvent(fatima, com.youthchallenge.feed.enums.FeedItemType.GOAL_COMPLETED, "Paint a Landscape", 50);
 
         log.info("Dummy data seeding complete!");
     }
@@ -103,6 +110,7 @@ public class DataSeeder implements CommandLineRunner {
                 .level(level)
                 .avatarUrl(avatarUrl)
                 .build();
+            
         return userRepository.save(user);
     }
 
@@ -117,6 +125,7 @@ public class DataSeeder implements CommandLineRunner {
 
     private void createGoal(User user, String title, GoalCategory category, int target, int current, GoalStatus status) {
         Goal goal = Goal.builder()
+            
                 .user(user)
                 .title(title)
                 .category(category)

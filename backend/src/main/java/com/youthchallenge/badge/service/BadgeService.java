@@ -12,6 +12,8 @@ import com.youthchallenge.user.service.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
+import com.youthchallenge.feed.service.FeedService;
+import com.youthchallenge.feed.enums.FeedItemType;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -28,6 +30,7 @@ public class BadgeService {
     private final UserBadgeRepository userBadgeRepository;
     private final UserService userService;
     private final ApplicationEventPublisher eventPublisher;
+    private final FeedService feedService;
 
     /**
      * Awards a badge to a user if they don't already have it.
@@ -52,6 +55,8 @@ public class BadgeService {
         userBadgeRepository.save(userBadge);
 
         log.info("Badge [{}] awarded to user [{}]", badgeKey, user.getDisplayName());
+
+        feedService.recordEvent(user, FeedItemType.BADGE_EARNED, badge.getName(), null);
 
         // Publish event for future notification system
         eventPublisher.publishEvent(new BadgeEarnedEvent(this, user.getId(), badgeKey.name()));

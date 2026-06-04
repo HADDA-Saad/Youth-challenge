@@ -16,6 +16,8 @@ import com.youthchallenge.user.model.User;
 import com.youthchallenge.user.service.XpService;
 import com.youthchallenge.community.service.CommunityService;
 import lombok.RequiredArgsConstructor;
+import com.youthchallenge.feed.service.FeedService;
+import com.youthchallenge.feed.enums.FeedItemType;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -35,6 +37,7 @@ public class ChallengeService {
     private final CommunityService communityService;
     private final XpService xpService;
     private final ApplicationEventPublisher eventPublisher;
+    private final FeedService feedService;
 
     public Page<ChallengeDto> getChallenges(User currentUser, Pageable pageable, Long communityId) {
         List<ChallengeStatus> statuses = List.of(ChallengeStatus.OPEN, ChallengeStatus.ACTIVE);
@@ -156,6 +159,8 @@ public class ChallengeService {
 
         participationRepository.save(participation);
 
+        feedService.recordEvent(user, FeedItemType.CHALLENGE_JOINED, challenge.getTitle(), null);
+
         return toDto(challenge, user);
     }
     @Transactional
@@ -249,6 +254,8 @@ public class ChallengeService {
             if (challenge.getCommunity() != null) {
                 communityService.addCommunityXp(participant, challenge.getCommunity(), xpEarned);
             }
+
+            feedService.recordEvent(participant, FeedItemType.CHALLENGE_COMPLETED, challenge.getTitle(), xpEarned);
 
             // Publish event for badge engine
             eventPublisher.publishEvent(

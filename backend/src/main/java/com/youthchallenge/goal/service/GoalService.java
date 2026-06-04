@@ -14,6 +14,8 @@ import com.youthchallenge.user.model.User;
 import com.youthchallenge.user.service.XpService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;
+import com.youthchallenge.feed.service.FeedService;
+import com.youthchallenge.feed.enums.FeedItemType;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -32,6 +34,7 @@ public class GoalService {
     private final GoalMapper goalMapper;
     private final XpService xpService;
     private final ApplicationEventPublisher eventPublisher;
+    private final FeedService feedService;
 
     public List<GoalDto> getGoals(User user) {
         List<Goal> goals = goalRepository.findAllByUserOrderByCreatedAtDesc(user);
@@ -110,6 +113,7 @@ public class GoalService {
 
         // Award daily check-in XP
         xpService.addXp(user, 10);
+        feedService.recordEvent(user, FeedItemType.CHECK_IN, goal.getTitle(), 10);
 
         // Check if goal is now completed
         if (goal.getCurrentValue() >= goal.getTargetValue()) {
@@ -118,6 +122,7 @@ public class GoalService {
 
             // Award completion XP
             xpService.addXp(user, 100);
+            feedService.recordEvent(user, FeedItemType.GOAL_COMPLETED, goal.getTitle(), 100);
 
             // Publish event for badge engine
             eventPublisher.publishEvent(new GoalCompletedEvent(this, user.getId(), goal.getId()));
