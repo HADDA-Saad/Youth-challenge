@@ -13,8 +13,19 @@ export function NotificationProvider({ children }) {
   useEffect(() => {
     if (!isAuthenticated || !token || !user?.userId) return;
 
+    const getWsUrl = () => {
+      if (import.meta.env.VITE_WS_URL) {
+        return import.meta.env.VITE_WS_URL;
+      }
+      const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+      if (window.location.port === '5173') {
+        return 'ws://localhost:9696/ws';
+      }
+      return `${protocol}//${window.location.host}/ws`;
+    };
+
     const client = new Client({
-      brokerURL: `ws://localhost:9696/ws`,
+      brokerURL: getWsUrl(),
       connectHeaders: {
         token: token,
       },
