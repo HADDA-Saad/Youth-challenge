@@ -1,0 +1,34 @@
+# ==============================================================================
+# AWS Configuration
+# ==============================================================================
+# The region where resources will be provisioned
+aws_region  = "us-east-1"
+environment = "production"
+
+# ==============================================================================
+# Database Configuration (RDS MySQL)
+# ==============================================================================
+# Database master administrator username
+db_username = "root"
+
+# Database master administrator password (REQUIRED, MUST BE SET LOCALLY)
+# Avoid using weak passwords. Must be at least 8 characters.
+db_password = "SuperSecurePassword123!"
+
+# Database hardware size (defaults to db.t3.micro, free tier eligible)
+db_instance_class = "db.t3.micro"
+db_name           = "youthchallenge"
+
+# ==============================================================================
+# EKS Cluster Configuration
+# ==============================================================================
+cluster_name    = "youthchallenge-cluster"
+node_group_name = "youthchallenge-nodes"
+
+# EC2 Node group hardware configuration
+node_instance_types = ["t3.medium"]
+
+# Auto-scaling limits
+node_desired_size = 2
+node_min_size     = 2
+node_max_size     = 5
