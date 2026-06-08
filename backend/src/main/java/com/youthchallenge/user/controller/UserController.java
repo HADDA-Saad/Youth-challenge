@@ -32,6 +32,14 @@ public class UserController {
     private final FriendService friendService;
 
 
+    @GetMapping("/search")
+    public ResponseEntity<ApiResponse<List<UserProfileDto>>> searchUsers(
+            @AuthenticationPrincipal User currentUser,
+            @RequestParam String query) {
+        List<UserProfileDto> results = userService.searchUsers(query, currentUser);
+        return ResponseEntity.ok(ApiResponse.success(results));
+    }
+
     @GetMapping("/me")
     public ResponseEntity<ApiResponse<UserProfileDto>> getMyProfile(@AuthenticationPrincipal User user) {
         UserProfileDto profile = userService.getUserProfileDto(user.getId(), goalRepository, challengeRepo, friendRepo);

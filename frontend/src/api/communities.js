@@ -64,3 +64,8 @@ export const assignRole = async (id, data) => {
   const response = await api.post(`/communities/${id}/roles`, data);
   return response.data;
 };
+
+export const searchCommunities = async (query) => {
+  const response = await api.get(`/communities/search`, { params: { query } });
+  return response.data;
+};

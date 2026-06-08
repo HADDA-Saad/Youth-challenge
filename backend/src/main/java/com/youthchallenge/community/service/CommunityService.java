@@ -35,6 +35,12 @@ public class CommunityService {
                 .collect(Collectors.toList());
     }
 
+    public List<CommunityDto> searchCommunities(String query, User currentUser) {
+        return communityRepository.findByNameContainingIgnoreCaseOrDescriptionContainingIgnoreCase(query, query).stream()
+                .map(c -> toDto(c, currentUser))
+                .collect(Collectors.toList());
+    }
+
     public CommunityDto getCommunity(User currentUser, Long id) {
         Community community = communityRepository.findById(id)
                 .orElseThrow(() -> ApiException.notFound("Community not found"));

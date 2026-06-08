@@ -12,12 +12,29 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
 public class UserService implements UserDetailsService {
 
     private final UserRepository userRepository;
+
+    public List<UserProfileDto> searchUsers(String query, User currentUser) {
+        List<User> users = userRepository.findByUsernameContainingIgnoreCaseAndIdNot(query, currentUser.getId());
+        return users.stream()
+                .map(user -> UserProfileDto.builder()
+                        .id(user.getId())
+                        .username(user.getDisplayName())
+                        .email(user.getEmail())
+                        .xp(user.getXp())
+                        .level(user.getLevel())
+                        .avatarUrl(user.getAvatarUrl())
+                        .bio(user.getBio())
+                        .createdAt(user.getCreatedAt())
+                        .build())
+                .collect(java.util.stream.Collectors.toList());
+    }
 
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {

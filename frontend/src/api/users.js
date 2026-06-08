@@ -29,3 +29,8 @@ export const getFriendshipStatus = async (userId) => {
   const response = await api.get(`/users/${userId}/friendship-status`);
   return response.data;
 };
+
+export const searchUsers = async (query) => {
+  const response = await api.get(`/users/search`, { params: { query } });
+  return response.data;
+};

@@ -22,6 +22,14 @@ public class CommunityController {
 
     private final CommunityService communityService;
 
+    @GetMapping("/search")
+    public ResponseEntity<ApiResponse<List<CommunityDto>>> searchCommunities(
+            @AuthenticationPrincipal User user,
+            @RequestParam String query) {
+        List<CommunityDto> results = communityService.searchCommunities(query, user);
+        return ResponseEntity.ok(ApiResponse.success(results));
+    }
+
     @GetMapping
     public ResponseEntity<ApiResponse<List<CommunityDto>>> getCommunities(@AuthenticationPrincipal User user) {
         List<CommunityDto> communities = communityService.getAllCommunities(user);

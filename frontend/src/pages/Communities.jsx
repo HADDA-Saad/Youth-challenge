@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { getCommunities, createCommunity, joinCommunity, leaveCommunity } from '../api/communities';
+import { getCommunities, createCommunity, joinCommunity, leaveCommunity, searchCommunities } from '../api/communities';
 import { useAuth } from '../context/AuthContext';
 import PageWrapper from '../components/layout/PageWrapper';
 import Modal from '../components/ui/Modal';
@@ -15,9 +15,19 @@ export default function Communities() {
   const [createForm, setCreateForm] = useState({ name: '', description: '' });
   const [createLoading, setCreateLoading] = useState(false);
 
+  const [searchQuery, setSearchQuery] = useState('');
+
   useEffect(() => {
-    fetchCommunities();
-  }, []);
+    const delayDebounceFn = setTimeout(() => {
+      if (searchQuery.trim() !== '') {
+        performSearch(searchQuery);
+      } else {
+        fetchCommunities();
+      }
+    }, 300);
+
+    return () => clearTimeout(delayDebounceFn);
+  }, [searchQuery]);
 
   const fetchCommunities = async () => {
     try {
@@ -28,6 +38,20 @@ export default function Communities() {
       }
     } catch (err) {
       setError('Failed to load communities');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const performSearch = async (query) => {
+    try {
+      setLoading(true);
+      const res = await searchCommunities(query);
+      if (res.success) {
+        setCommunities(res.data);
+      }
+    } catch (err) {
+      setError('Failed to search communities');
     } finally {
       setLoading(false);
     }
@@ -84,14 +108,31 @@ export default function Communities() {
   return (
     <PageWrapper>
       <div className="max-w-5xl mx-auto">
-        <div className="flex items-center justify-between mb-8">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
           <div>
             <h1 className="text-2xl font-bold text-dark-50">Communities</h1>
             <p className="text-dark-400 mt-1">Join communities, climb local leaderboards, and earn custom badges.</p>
           </div>
-          <button onClick={() => setShowCreateModal(true)} className="btn-primary">
-            Create Community
-          </button>
+          <div className="flex items-center gap-3">
+            {/* Search Input */}
+            <div className="relative">
+              <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-dark-500">
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+              </div>
+              <input
+                type="text"
+                placeholder="Search communities..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="bg-dark-950/40 border border-dark-700/80 hover:border-dark-600/60 focus:border-primary-500 rounded-xl pl-10 pr-4 py-2 text-sm text-dark-100 placeholder-dark-500 focus:outline-none focus:ring-1 focus:ring-primary-500 transition-all duration-300 w-full md:w-64"
+              />
+            </div>
+            <button onClick={() => setShowCreateModal(true)} className="btn-primary py-2 text-sm shrink-0">
+              Create Community
+            </button>
+          </div>
         </div>
 
         {error && <div className="text-danger-400 mb-4">{error}</div>}

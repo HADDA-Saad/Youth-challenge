@@ -18,4 +18,6 @@ public interface UserRepository extends JpaRepository<User, Long> {
     List<User> findTop50ByOrderByXpDesc();
 
     List<User> findByIdInOrderByXpDesc(List<Long> ids);
+
+    List<User> findByUsernameContainingIgnoreCaseAndIdNot(String username, Long id);
 }
