@@ -3,6 +3,7 @@ package com.youthchallenge.auth.controller;
 import com.youthchallenge.auth.dto.AuthResponse;
 import com.youthchallenge.auth.dto.LoginRequest;
 import com.youthchallenge.auth.dto.RegisterRequest;
+import com.youthchallenge.auth.dto.GoogleLoginRequest;
 import com.youthchallenge.auth.service.AuthService;
 import com.youthchallenge.common.dto.ApiResponse;
 import jakarta.validation.Valid;
@@ -30,5 +31,11 @@ public class AuthController {
     public ResponseEntity<ApiResponse<AuthResponse>> login(@Valid @RequestBody LoginRequest request) {
         AuthResponse response = authService.login(request);
         return ResponseEntity.ok(ApiResponse.success("Login successful", response));
+    }
+
+    @PostMapping("/google")
+    public ResponseEntity<ApiResponse<AuthResponse>> googleLogin(@Valid @RequestBody GoogleLoginRequest request) {
+        AuthResponse response = authService.googleLogin(request);
+        return ResponseEntity.ok(ApiResponse.success("Google login successful", response));
     }
 }

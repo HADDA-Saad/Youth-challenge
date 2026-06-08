@@ -1,7 +1,9 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import Logo from '../../components/ui/Logo';
-import { register as registerApi } from '../../api/auth';
+import { GoogleLogin } from '@react-oauth/google';
+import { register as registerApi, loginWithGoogle } from '../../api/auth';
+import { useAuth } from '../../context/AuthContext';
 
 export default function Register() {
   const [username, setUsername] = useState('');
@@ -10,6 +12,7 @@ export default function Register() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const { login } = useAuth();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -113,6 +116,43 @@ export default function Register() {
               {loading ? 'Creating account...' : 'Create Account'}
             </button>
           </form>
+
+          <div className="relative my-6">
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t border-dark-600"></div>
+            </div>
+            <div className="relative flex justify-center text-sm">
+              <span className="px-2 bg-dark-800 text-dark-400">Or continue with</span>
+            </div>
+          </div>
+
+          <div className="flex justify-center">
+            <GoogleLogin
+              onSuccess={async (credentialResponse) => {
+                setError('');
+                setLoading(true);
+                try {
+                  const response = await loginWithGoogle(credentialResponse.credential);
+                  if (response.success) {
+                    login(response.data);
+                    navigate('/dashboard');
+                  } else {
+                    setError(response.message || 'Google Login failed');
+                  }
+                } catch (err) {
+                  setError(err.response?.data?.message || 'Google Login failed. Please try again.');
+                } finally {
+                  setLoading(false);
+                }
+              }}
+              onError={() => {
+                setError('Google Sign Up Failed');
+              }}
+              theme="filled_black"
+              shape="pill"
+              text="signup_with"
+            />
+          </div>
 
           <div className="mt-6 text-center">
             <p className="text-dark-400 text-sm">
