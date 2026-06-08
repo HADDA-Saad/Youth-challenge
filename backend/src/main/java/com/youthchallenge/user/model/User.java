@@ -39,7 +39,12 @@ public class User implements UserDetails {
     @Column(nullable = false)
     private String level = "Beginner";
 
+    @Lob
+    @Column(columnDefinition = "LONGTEXT")
     private String avatarUrl;
+
+    @Column(length = 160)
+    private String bio;
 
     @Builder.Default
     @Column(nullable = false, updatable = false)

@@ -19,6 +19,7 @@ public class UserProfileDto {
     private Integer xp;
     private String level;
     private String avatarUrl;
+    private String bio;
     private LocalDateTime createdAt;
     
     private int goalsCompleted;

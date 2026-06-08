@@ -5,6 +5,11 @@ export const getMyProfile = async () => {
   return response.data;
 };
 
+export const updateMyProfile = async (data) => {
+  const response = await api.patch('/users/me', data);
+  return response.data;
+};
+
 export const getMyBadges = async () => {
   const response = await api.get('/users/me/badges');
   return response.data;

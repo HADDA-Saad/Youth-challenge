@@ -8,6 +8,7 @@ import com.youthchallenge.goal.repository.GoalRepository;
 import com.youthchallenge.social.dto.FriendshipStatusDto;
 import com.youthchallenge.social.repository.FriendRequestRepository;
 import com.youthchallenge.social.service.FriendService;
+import com.youthchallenge.user.dto.UpdateProfileRequest;
 import com.youthchallenge.user.dto.UserProfileDto;
 import com.youthchallenge.user.model.User;
 import com.youthchallenge.user.service.UserService;
@@ -35,6 +36,14 @@ public class UserController {
     public ResponseEntity<ApiResponse<UserProfileDto>> getMyProfile(@AuthenticationPrincipal User user) {
         UserProfileDto profile = userService.getUserProfileDto(user.getId(), goalRepository, challengeRepo, friendRepo);
         return ResponseEntity.ok(ApiResponse.success(profile));
+    }
+
+    @PatchMapping("/me")
+    public ResponseEntity<ApiResponse<UserProfileDto>> updateProfile(
+            @AuthenticationPrincipal User currentUser,
+            @RequestBody UpdateProfileRequest request) {
+        UserProfileDto updatedProfile = userService.updateProfile(currentUser, request, goalRepository, challengeRepo, friendRepo);
+        return ResponseEntity.ok(ApiResponse.success("Profile updated successfully", updatedProfile));
     }
 
     @GetMapping("/{id}")
