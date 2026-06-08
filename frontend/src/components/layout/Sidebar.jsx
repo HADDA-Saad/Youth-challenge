@@ -1,4 +1,5 @@
 import { NavLink } from 'react-router-dom';
+import Logo from '../ui/Logo';
 
 const navItems = [
   {
@@ -68,30 +69,28 @@ const navItems = [
 
 export default function Sidebar() {
   return (
-    <aside className="fixed left-0 top-0 bottom-0 w-64 bg-dark-800/80 backdrop-blur-md border-r border-dark-700 flex flex-col z-30">
+    <aside className="fixed left-0 top-0 bottom-0 w-64 bg-dark-900/60 backdrop-blur-xl border-r border-dark-800/80 flex flex-col z-30">
       {/* Logo */}
-      <div className="px-6 py-5 border-b border-dark-700">
+      <div className="px-6 py-5 border-b border-dark-800/80">
         <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-primary-500 to-accent-500 flex items-center justify-center">
-            <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-            </svg>
-          </div>
-          <span className="text-lg font-bold text-dark-50 tracking-tight">YouthChallenge</span>
+          <Logo size={36} />
+          <span className="text-lg font-display font-extrabold tracking-tight text-white bg-clip-text bg-gradient-to-r from-white via-dark-100 to-dark-300">
+            YouthChallenge
+          </span>
         </div>
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
+      <nav className="flex-1 px-3 py-4 space-y-1.5 overflow-y-auto">
         {navItems.map((item) => (
           <NavLink
             key={item.path}
             to={item.path}
             className={({ isActive }) =>
-              `flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 ${
+              `flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-300 border ${
                 isActive
-                  ? 'bg-primary-600/15 text-primary-400 border border-primary-500/20'
-                  : 'text-dark-400 hover:text-dark-200 hover:bg-dark-700/50'
+                  ? 'bg-gradient-to-r from-primary-500/10 to-accent-500/5 text-primary-400 border-primary-500/30 shadow-[0_0_15px_rgba(124,58,237,0.1)]'
+                  : 'text-dark-400 border-transparent hover:text-dark-200 hover:bg-dark-800/40 hover:border-dark-800/50'
               }`
             }
           >
@@ -102,14 +101,14 @@ export default function Sidebar() {
       </nav>
 
       {/* Footer */}
-      <div className="px-4 py-4 border-t border-dark-700 flex flex-col gap-3">
+      <div className="px-4 py-4 border-t border-dark-800/80 flex flex-col gap-3">
         <NavLink
           to="/rules"
           className={({ isActive }) =>
-            `flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+            `flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-300 border ${
               isActive
-                ? 'bg-accent-600/15 text-accent-400 border border-accent-500/20'
-                : 'text-dark-400 hover:text-dark-200 hover:bg-dark-700/50'
+                ? 'bg-gradient-to-r from-accent-500/10 to-primary-500/5 text-accent-400 border-accent-500/30 shadow-[0_0_15px_rgba(6,182,212,0.1)]'
+                : 'text-dark-400 border-transparent hover:text-dark-200 hover:bg-dark-800/40 hover:border-dark-800/50'
             }`
           }
         >
@@ -118,7 +117,7 @@ export default function Sidebar() {
           </svg>
           XP & Rules
         </NavLink>
-        <p className="text-xs text-dark-600 text-center">© 2026 YouthChallenge</p>
+        <p className="text-xs text-dark-500 text-center font-medium">© 2026 YouthChallenge</p>
       </div>
     </aside>
   );
