@@ -8,6 +8,8 @@ import com.youthchallenge.goal.enums.GoalStatus;
 import com.youthchallenge.goal.event.CheckInEvent;
 import com.youthchallenge.goal.event.GoalCompletedEvent;
 import com.youthchallenge.goal.repository.GoalRepository;
+import com.youthchallenge.social.event.FriendAddedEvent;
+import com.youthchallenge.social.repository.FriendRequestRepository;
 import com.youthchallenge.user.model.User;
 import com.youthchallenge.user.service.UserService;
 import lombok.RequiredArgsConstructor;
@@ -24,6 +26,7 @@ public class BadgeEvaluator {
     private final UserService userService;
     private final GoalRepository goalRepository;
     private final ChallengeParticipationRepository participationRepository;
+    private final FriendRequestRepository friendRequestRepository;
 
     /**
      * FIRST_STEP: First goal completed
@@ -75,5 +78,15 @@ public class BadgeEvaluator {
         }
     }
 
-    // FriendAddedEvent will be added in Week 5 for SOCIAL_BUTTERFLY
+    /**
+     * SOCIAL_BUTTERFLY: 10 accepted friends
+     */
+    @EventListener
+    public void onFriendAdded(FriendAddedEvent event) {
+        User user = userService.getUserById(event.getUserId());
+        long friendsCount = friendRequestRepository.countAcceptedFriends(user);
+        if (friendsCount >= 10) {
+            badgeService.awardBadge(user, BadgeKey.SOCIAL_BUTTERFLY);
+        }
+    }
 }
